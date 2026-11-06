@@ -22,13 +22,14 @@
         </div>
         <div>
           <span class="font-bold text-lg tracking-tight text-slate-900">SmartClause</span>
-          <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">By Alfred Stengard</span>
+          <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">AI Prototype</span>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
         <button type="button" onclick="loadDemoResult()" class="text-sm font-medium text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition flex items-center gap-1.5">
-                    <span>Try Demo Analysis</span>
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+          <span>Try Demo Analysis</span>
         </button>
 
         <button type="button" onclick="toggleApiModal(true)" id="apiStatusBtn" class="text-sm font-medium px-3.5 py-2 rounded-xl border transition flex items-center gap-2 bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200">
@@ -61,11 +62,32 @@
           Understand any contract in seconds
         </h1>
         <p class="text-slate-600 text-base sm:text-lg">
-          Upload a PDF or paste the contract text. SmartClause breaks it down into logical categories with plain-English summaries, risk levels, and verbatim quotes.
+          Upload a PDF or paste the contract text. SmartClause detects your role and breaks the agreement down into categories with tailored risk analysis and verbatim quotes.
         </p>
       </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+
+        <!-- Dynamic POV / Party Auto-Detection Input -->
+        <div class="mb-6 bg-indigo-50/60 border border-indigo-100 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="userPartyInput" class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+              <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
+              <span>Your Organization / Party Name (Dynamic POV Detection)</span>
+            </label>
+            <span class="text-[11px] font-medium text-indigo-600 bg-white px-2 py-0.5 rounded-md border border-indigo-200">Single-Pass AI Auto-Match</span>
+          </div>
+          <p class="text-xs text-slate-600 mb-3">
+            Enter your company or personal name (e.g., <span class="font-medium text-slate-800">"Apex Global Corp"</span> or <span class="font-medium text-slate-800">"NextGen Dev Studio"</span>). The AI will automatically detect which party role you represent and evaluate all risks from your point of view.
+          </p>
+          <input
+            id="userPartyInput"
+            type="text"
+            placeholder="e.g., Apex Global Corp (leave blank for a neutral, balanced review)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+
         <!-- Input Mode Tabs -->
         <div class="flex rounded-xl bg-slate-100 p-1 mb-6">
           <button type="button" id="tabPdf" onclick="switchInputTab('pdf')" class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-white text-slate-900 shadow-sm transition flex items-center justify-center gap-2">
@@ -137,7 +159,7 @@
       </div>
       <h2 class="text-2xl font-bold text-slate-900 mb-2">AI is analyzing your contract...</h2>
       <p class="text-slate-600 text-sm mb-6" id="loadingSubtext">
-        Reviewing clauses, identifying legal risks, and structuring categories.
+        Detecting your party role, evaluating legal risks from your POV, and structuring clauses.
       </p>
       <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
         <div class="bg-indigo-600 h-full w-2/3 animate-pulse rounded-full"></div>
@@ -145,9 +167,9 @@
     </section>
 
     <!-- STEP 2: DASHBOARD VIEW -->
-    <section id="dashboardView" class="hidden">
-      <!-- Executive Summary Card -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+    <section id="dashboardView" class="hidden space-y-6">
+      <!-- Executive Summary & POV Detection Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
             <div class="flex items-center gap-3 flex-wrap">
@@ -156,14 +178,38 @@
             </div>
             <p id="resExecutiveSummary" class="text-sm text-slate-600 mt-2 max-w-4xl"></p>
           </div>
-          <button
-            type="button"
-            onclick="resetToUpload()"
-            class="self-start md:self-center shrink-0 px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-medium transition flex items-center gap-2"
-          >
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Analyze Another Contract</span>
-          </button>
+          <div class="flex items-center gap-2.5 self-start md:self-center shrink-0">
+            <button
+              type="button"
+              onclick="scrollToFullAgreement()"
+              class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-medium transition flex items-center gap-1.5"
+            >
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <span>Read Full Agreement</span>
+            </button>
+            <button
+              type="button"
+              onclick="resetToUpload()"
+              class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-medium transition flex items-center gap-2"
+            >
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              <span>New Analysis</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Detected POV Bar -->
+        <div class="mt-4 pt-1 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span class="font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="user-check" class="w-4 h-4 text-indigo-600"></i>
+              <span>Analysis Point of View (POV):</span>
+            </span>
+            <span id="povMatchedEntity" class="font-semibold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200"></span>
+            <span id="povDefinedRole" class="font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200"></span>
+            <span id="povCounterparty" class="text-slate-500"></span>
+          </div>
+          <span id="povConfidenceBadge" class="font-medium px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"></span>
         </div>
       </div>
 
@@ -192,7 +238,7 @@
             <p id="detailSummary" class="text-slate-700 leading-relaxed text-base mb-6"></p>
 
             <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Key Takeaways</h4>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Key Takeaways for Your Party</h4>
               <ul id="detailKeyPoints" class="space-y-2 text-sm text-slate-700"></ul>
             </div>
           </div>
@@ -212,6 +258,48 @@
             ></blockquote>
           </div>
         </div>
+      </div>
+
+      <!-- Section 3: Full Agreement Reader Box -->
+      <div id="fullAgreementSection" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+              <i data-lucide="scroll-text" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-900">Full Agreement Document</h3>
+              <p class="text-xs text-slate-500">Complete unedited text extracted from your uploaded or pasted contract</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <input
+                id="fullTextSearchInput"
+                type="text"
+                oninput="highlightFullText()"
+                placeholder="Search in full contract..."
+                class="rounded-xl border border-slate-300 pl-3 pr-8 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <span id="searchMatchCount" class="text-[11px] text-slate-400 ml-1"></span>
+            </div>
+            <button
+              type="button"
+              onclick="copyFullAgreement()"
+              id="copyFullTextBtn"
+              class="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-medium text-slate-700 transition flex items-center gap-1.5"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Text</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="fullAgreementContent"
+          class="bg-slate-50 border border-slate-200 rounded-xl p-6 max-h-[520px] overflow-y-auto font-mono text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
+        ></div>
       </div>
     </section>
   </main>
@@ -302,6 +390,22 @@
       ]
     };
 
+    const DEMO_CONTRACT_TEXT = [
+      'MASTER SOFTWARE DEVELOPMENT AGREEMENT',
+      '',
+      '1. PARTIES AND SCOPE',
+      'This Master Software Development Agreement ("Agreement") is entered into by and between Apex Global Corp ("Client") and NextGen Dev Studio LLC ("Contractor"). Contractor agrees to design, develop, and deliver custom cloud software solutions according to Client specifications.',
+      '',
+      '2. TERM AND TERMINATION',
+      'This Agreement commences on May 1, 2026, and continues until terminated by either party upon ninety (90) days prior written notice. However, Client may terminate this Agreement immediately without notice if Contractor reassigns any key personnel without Client prior written consent.',
+      '',
+      '3. FEES AND PAYMENT TERMS',
+      'Client shall pay Contractor a time-and-materials rate of $150 USD per hour. Contractor shall invoice Client monthly in arrears. All undisputed invoices are payable within sixty (60) days of receipt (Net 60). Late payments shall accrue interest at 1.5% per month.',
+      '',
+      '4. INTELLECTUAL PROPERTY AND LIQUIDATED DAMAGES',
+      'All work product, source code, and documentation created by Contractor shall vest immediately in Client upon creation as work made for hire. In the event Contractor breaches the confidentiality or non-solicitation obligations herein, Contractor shall immediately pay Client $50,000 USD in liquidated damages per breach, without prejudice to Client right to seek injunctive relief.'
+    ].join('\n');
+
     let activeInputMode = 'pdf';
     let selectedPdfFile = null;
     let currentAnalysisData = null;
@@ -342,7 +446,6 @@
       let model = localStorage.getItem('byok_model') || 'gemini-3.8-flash';
       const apiKey = localStorage.getItem('byok_api_key') || '';
 
-      // Automatically migrate deprecated gemini-2.5 models stored in browser localStorage
       if (model.startsWith('gemini-2.5')) {
         model = 'gemini-3.8-flash';
         localStorage.setItem('byok_model', model);
@@ -478,6 +581,7 @@
       const apiKey = localStorage.getItem('byok_api_key');
       const provider = localStorage.getItem('byok_provider') || 'gemini';
       let model = localStorage.getItem('byok_model') || MODELS[provider][0].id;
+      const userParty = document.getElementById('userPartyInput').value.trim();
 
       if (model.startsWith('gemini-2.5')) {
         model = 'gemini-3.8-flash';
@@ -494,6 +598,7 @@
       formData.append('provider', provider);
       formData.append('model', model);
       formData.append('apiKey', apiKey);
+      formData.append('userParty', userParty);
 
       if (activeInputMode === 'pdf') {
         if (!selectedPdfFile) {
@@ -557,6 +662,13 @@
 
       document.getElementById('resExecutiveSummary').textContent = data.executiveSummary || '';
 
+      // Populate Detected POV Banner
+      const pov = data.detectedPerspective || {};
+      document.getElementById('povMatchedEntity').textContent = pov.matchedEntity || 'All Parties (Balanced View)';
+      document.getElementById('povDefinedRole').textContent = `Role: ${pov.definedRole || 'Neutral'}`;
+      document.getElementById('povCounterparty').textContent = pov.counterparty ? `vs. ${pov.counterparty}` : '';
+      document.getElementById('povConfidenceBadge').textContent = pov.matchConfidence || 'Auto-Detected POV';
+
       const listEl = document.getElementById('categoryList');
       listEl.innerHTML = '';
 
@@ -582,6 +694,12 @@
         `;
         listEl.appendChild(btn);
       });
+
+      // Populate Full Agreement Reader
+      const fullText = data.fullContractText || '';
+      document.getElementById('fullAgreementContent').textContent = fullText || 'Full agreement text is not available.';
+      document.getElementById('fullTextSearchInput').value = '';
+      document.getElementById('searchMatchCount').textContent = '';
 
       safeRenderIcons();
       if (data.categories && data.categories.length > 0) {
@@ -619,6 +737,57 @@
       document.getElementById('detailOriginalText').textContent = cat.originalText || 'No verbatim quote available.';
     }
 
+    function scrollToFullAgreement() {
+      const el = document.getElementById('fullAgreementSection');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function highlightFullText() {
+      if (!currentAnalysisData || !currentAnalysisData.fullContractText) return;
+      const rawText = currentAnalysisData.fullContractText;
+      const query = document.getElementById('fullTextSearchInput').value.trim();
+      const container = document.getElementById('fullAgreementContent');
+      const countEl = document.getElementById('searchMatchCount');
+
+      if (!query) {
+        container.textContent = rawText;
+        countEl.textContent = '';
+        return;
+      }
+
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      const matches = rawText.match(regex);
+      countEl.textContent = matches ? `${matches.length} found` : '0 found';
+
+      const safeHtml = escapeHtml(rawText).replace(
+        new RegExp(`(${escapeHtml(escapedQuery)})`, 'gi'),
+        '<mark class="bg-amber-200 text-slate-900 px-0.5 rounded">$1</mark>'
+      );
+      container.innerHTML = safeHtml;
+    }
+
+    function copyFullAgreement() {
+      if (!currentAnalysisData || !currentAnalysisData.fullContractText) return;
+      navigator.clipboard.writeText(currentAnalysisData.fullContractText);
+      const btn = document.getElementById('copyFullTextBtn');
+      const originalHtml = btn.innerHTML;
+      btn.textContent = 'Copied!';
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        safeRenderIcons();
+      }, 1500);
+    }
+
     function resetToUpload() {
       hideError();
       document.getElementById('dashboardView').classList.add('hidden');
@@ -627,37 +796,48 @@
     }
 
     function fillSampleText() {
-      const sampleLines = [
-        'MASTER SOFTWARE DEVELOPMENT AGREEMENT',
-        '',
-        '1. PARTIES AND SCOPE',
-        'This Master Software Development Agreement ("Agreement") is entered into by and between Apex Global Corp ("Client") and NextGen Dev Studio LLC ("Contractor"). Contractor agrees to design, develop, and deliver custom cloud software solutions according to Client specifications.',
-        '',
-        '2. TERM AND TERMINATION',
-        'This Agreement commences on May 1, 2026, and continues until terminated by either party upon ninety (90) days prior written notice. However, Client may terminate this Agreement immediately without notice if Contractor reassigns any key personnel without Client prior written consent.',
-        '',
-        '3. FEES AND PAYMENT TERMS',
-        'Client shall pay Contractor a time-and-materials rate of $150 USD per hour. Contractor shall invoice Client monthly in arrears. All undisputed invoices are payable within sixty (60) days of receipt (Net 60). Late payments shall accrue interest at 1.5% per month.',
-        '',
-        '4. INTELLECTUAL PROPERTY AND LIQUIDATED DAMAGES',
-        'All work product, source code, and documentation created by Contractor shall vest immediately in Client upon creation as work made for hire. In the event Contractor breaches the confidentiality or non-solicitation obligations herein, Contractor shall immediately pay Client $50,000 USD in liquidated damages per breach, without prejudice to Client right to seek injunctive relief.'
-      ];
-      document.getElementById('contractTextarea').value = sampleLines.join('\n');
+      document.getElementById('contractTextarea').value = DEMO_CONTRACT_TEXT;
+      if (!document.getElementById('userPartyInput').value.trim()) {
+        document.getElementById('userPartyInput').value = 'NextGen Dev Studio';
+      }
     }
 
     function loadDemoResult() {
       hideError();
+      const typedParty = document.getElementById('userPartyInput').value.trim();
+      const isClientPov = typedParty.toLowerCase().includes('apex');
+
       renderDashboard({
         contractTitle: "Master Software Development Agreement (Demo)",
-        overallRisk: "Medium",
-        executiveSummary: "This agreement is a standard IT software development contract, but it includes extended Net 60 payment terms and a strict $50,000 liquidated damages penalty for confidentiality or non-solicitation breaches that should be reviewed carefully.",
+        overallRisk: isClientPov ? "Low" : "High",
+        detectedPerspective: isClientPov
+          ? {
+              userInput: typedParty || "Apex Global Corp",
+              matchedEntity: "Apex Global Corp",
+              definedRole: "Client",
+              counterparty: "NextGen Dev Studio LLC (Contractor)",
+              matchConfidence: "Exact Match"
+            }
+          : {
+              userInput: typedParty || "NextGen Dev Studio LLC",
+              matchedEntity: "NextGen Dev Studio LLC",
+              definedRole: "Contractor",
+              counterparty: "Apex Global Corp (Client)",
+              matchConfidence: "Exact Match"
+            },
+        executiveSummary: isClientPov
+          ? "Analyzed from Apex Global Corp's (Client) perspective: This agreement is highly favorable to you, granting immediate IP ownership, Net 60 payment terms, unilateral termination rights over staff changes, and $50,000 liquidated damages protection."
+          : "Analyzed from NextGen Dev Studio LLC's (Contractor) perspective: This agreement carries high commercial risk for you, including extended Net 60 payment terms, immediate IP transfer before payment, and a strict $50,000 liquidated damages penalty.",
+        fullContractText: DEMO_CONTRACT_TEXT,
         categories: [
           {
             id: "parties",
             title: "Parties & Scope of Work",
             icon: "users",
             riskLevel: "Low",
-            summary: "The contract is between Apex Global Corp (Client) and NextGen Dev Studio LLC (Contractor) for custom cloud software development.",
+            summary: isClientPov
+              ? "You (Apex Global Corp) are engaging NextGen Dev Studio LLC to build custom cloud software according to your specifications."
+              : "You (NextGen Dev Studio LLC) are obligated to design, develop, and deliver custom cloud software according to Apex Global Corp's specifications.",
             keyPoints: [
               "Engagement is tied to specific key personnel approved by the Client.",
               "Contractor cannot reassign key staff without prior written consent."
@@ -668,8 +848,10 @@
             id: "termination",
             title: "Term & Termination",
             icon: "calendar",
-            riskLevel: "Medium",
-            summary: "The agreement runs indefinitely starting May 1, 2026, with a mutual 90-day notice period, though the Client holds an immediate termination right if key staff are replaced.",
+            riskLevel: isClientPov ? "Low" : "Medium",
+            summary: isClientPov
+              ? "Provides a 90-day mutual notice period, plus gives you an immediate termination right if the Contractor swaps out key personnel without your approval."
+              : "While standard termination requires 90 days' notice, the Client can terminate your contract immediately if you reassign any key staff without prior written consent.",
             keyPoints: [
               "90-day mutual notice period for standard termination.",
               "Immediate termination right for the Client upon unauthorized staff changes."
@@ -680,11 +862,13 @@
             id: "payment",
             title: "Fees & Payment Terms",
             icon: "credit-card",
-            riskLevel: "Medium",
-            summary: "The hourly rate is $150 USD billed monthly in arrears. Payment terms are Net 60, which is longer than the standard Net 30 industry benchmark.",
+            riskLevel: isClientPov ? "Low" : "Medium",
+            summary: isClientPov
+              ? "You pay $150 USD/hour billed monthly in arrears with generous Net 60 payment terms."
+              : "Your hourly rate is $150 USD billed monthly in arrears, but Net 60 payment terms tie up your working capital for two full months after invoicing.",
             keyPoints: [
               "$150 USD/hour billed monthly in arrears.",
-              "Net 60 payment window ties up working capital for two months."
+              "Net 60 payment window."
             ],
             originalText: "3. FEES AND PAYMENT TERMS\nClient shall pay Contractor a time-and-materials rate of $150 USD per hour. Contractor shall invoice Client monthly in arrears. All undisputed invoices are payable within sixty (60) days of receipt (Net 60). Late payments shall accrue interest at 1.5% per month."
           },
@@ -692,8 +876,10 @@
             id: "ip-liability",
             title: "IP Rights & Liquidated Damages",
             icon: "shield-alert",
-            riskLevel: "High",
-            summary: "All source code and IP transfer immediately to the Client upon creation. A strict $50,000 USD liquidated damages clause applies per breach of confidentiality or non-solicitation.",
+            riskLevel: isClientPov ? "Low" : "High",
+            summary: isClientPov
+              ? "All code and IP vest in you immediately upon creation, backed by a $50,000 USD liquidated damages clause protecting your confidentiality."
+              : "You transfer all IP immediately upon creation (even before invoices are paid) and face a strict $50,000 USD fixed penalty per breach of confidentiality or non-solicitation.",
             keyPoints: [
               "Client owns all code immediately upon creation (even prior to invoice payment).",
               "$50,000 USD fixed penalty per breach without requiring proof of actual damages."

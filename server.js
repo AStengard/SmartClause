@@ -12,8 +12,17 @@ const upload = multer({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Strict system prompt enforcing valid JSON output in English
-const SYSTEM_PROMPT = `You are a senior commercial legal counsel and contract analysis expert. Your task is to analyze the submitted contract and break it down into logical, easy-to-navigate categories (e.g., Parties & Scope, Term & Termination, Pricing & Payment Terms, Liability & Indemnification, Confidentiality & IP Rights, Dispute Resolution, Miscellaneous / Special Clauses).
+// Function to dynamically build the system prompt with single-pass POV detection
+function buildSystemPrompt(userPartyName) {
+  const povInstruction = userPartyName && userPartyName.trim() !== ''
+    ? `CRITICAL POV INSTRUCTION: The user's organization or name is "${userPartyName.trim()}".
+First, scan the contract to dynamically identify which defined party or role they represent (e.g., "Client", "Customer", "Contractor", "Supplier", "Licensor", "Employer", etc.) and who the counterparty is.
+Then, conduct the ENTIRE risk assessment, executive summary, category summaries, and key takeaways strictly from "${userPartyName.trim()}"'s perspective (protecting their interests, flagging clauses that expose THEM to liability, financial risk, or unfavorable obligations).`
+    : `POV INSTRUCTION: The user did not specify their organization name. Identify the primary parties in the contract, and conduct a balanced, objective risk assessment highlighting which party bears the risk in each section.`;
+
+  return `You are a senior commercial legal counsel and contract analysis expert. Your task is to analyze the submitted contract and break it down into logical, easy-to-navigate categories (e.g., Parties & Scope, Term & Termination, Pricing & Payment Terms, Liability & Indemnification, Confidentiality & IP Rights, Dispute Resolution, Miscellaneous / Special Clauses).
+
+${povInstruction}
 
 You MUST respond ONLY with a valid JSON object (no markdown formatting like \`\`\`json, no introductory or concluding text).
 
@@ -21,22 +30,40 @@ The JSON structure must strictly follow this schema:
 {
   "contractTitle": "Short identified title of the contract (e.g., 'Master Services Agreement - IT Consulting')",
   "overallRisk": "Low" | "Medium" | "High",
-  "executiveSummary": "A concise 2-3 sentence executive summary of the contract and its overall risk balance.",
+  "detectedPerspective": {
+    "userInput": "The organization name provided by the user, or 'Neutral / Unspecified'",
+    "matchedEntity": "The full legal name of the matched party in the contract (or 'All Parties (Balanced View)' if unspecified/not found)",
+    "definedRole": "The contract's defined term for the user's party (e.g., 'Client', 'Contractor', 'Buyer', or 'Neutral')",
+    "counterparty": "The full legal name and defined role of the other party (e.g., 'NextGen Dev Studio LLC (Contractor)')",
+    "matchConfidence": "Exact Match" | "Partial Match" | "Inferred Role" | "Neutral POV"
+  },
+  "executiveSummary": "A concise 2-3 sentence executive summary of the contract and its overall risk balance, written directly from the detected perspective.",
   "categories": [
     {
       "id": "unique-slug-id",
       "title": "Category Name",
       "icon": "users" | "calendar" | "credit-card" | "shield-alert" | "lock" | "scale" | "file-text" | "alert-triangle",
       "riskLevel": "Low" | "Medium" | "High" | "Info",
-      "summary": "A clear, plain-English summary of what applies in this section and its practical implications.",
+      "summary": "A clear, plain-English summary of what applies in this section and its practical implications for the user's party.",
       "keyPoints": [
-        "Key takeaway or obligation 1",
-        "Key takeaway or obligation 2"
+        "Key takeaway, risk, or obligation 1 from the user's perspective",
+        "Key takeaway, risk, or obligation 2 from the user's perspective"
       ],
       "originalText": "Exact verbatim quotes and clauses directly from the contract text that support this summary. Preserve section numbering if present."
     }
   ]
 }`;
+}
+
+// Lightweight regex pre-scan to give the LLM extra context on where the user's party name appears
+function findPartyMentions(contractText, userPartyName) {
+  if (!userPartyName || userPartyName.trim().length < 2) return '';
+  const escaped = userPartyName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`.{0,120}${escaped}.{0,120}`, 'gi');
+  const matches = contractText.match(regex);
+  if (!matches || matches.length === 0) return '';
+  return `\n\n[PRE-SCAN HINT: The user's input "${userPartyName.trim()}" was found in the text near: "${matches.slice(0, 3).join(' ... ')}"]`;
+}
 
 function cleanAndParseJSON(rawText) {
   const cleaned = rawText
@@ -49,7 +76,7 @@ function cleanAndParseJSON(rawText) {
 
 app.post('/api/analyze', upload.single('file'), async (req, res) => {
   try {
-    const { provider, apiKey, model } = req.body;
+    const { provider, apiKey, model, userParty } = req.body;
     let contractText = req.body.text || '';
 
     if (req.file) {
@@ -73,6 +100,10 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
     }
 
     const truncatedText = contractText.slice(0, 120000);
+    const systemPrompt = buildSystemPrompt(userParty);
+    const preScanHint = findPartyMentions(truncatedText, userParty);
+    const userMessageContent = `Analyze the following contract:${preScanHint}\n\n${truncatedText}`;
+
     let rawJsonResponse = '';
 
     // --- OPENAI ---
@@ -89,8 +120,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
           response_format: { type: 'json_object' },
           temperature: 0.2,
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `Analyze the following contract:\n\n${truncatedText}` }
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessageContent }
           ]
         })
       });
@@ -111,8 +142,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [{ parts: [{ text: `Analyze the following contract:\n\n${truncatedText}` }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: userMessageContent }] }],
           generationConfig: {
             responseMimeType: 'application/json',
             temperature: 0.2
@@ -141,9 +172,9 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
           model: selectedModel,
           max_tokens: 4096,
           temperature: 0.2,
-          system: SYSTEM_PROMPT,
+          system: systemPrompt,
           messages: [
-            { role: 'user', content: `Analyze the following contract and respond ONLY with valid JSON:\n\n${truncatedText}` }
+            { role: 'user', content: `${userMessageContent}\n\nRespond ONLY with valid JSON.` }
           ]
         })
       });
@@ -158,6 +189,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
     }
 
     const parsedResult = cleanAndParseJSON(rawJsonResponse);
+    // Attach the full extracted contract text so the user can read the entire agreement on the frontend
+    parsedResult.fullContractText = contractText;
     return res.json(parsedResult);
 
   } catch (error) {
