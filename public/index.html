@@ -180,14 +180,6 @@
           <div class="flex items-center gap-2.5 self-start md:self-center shrink-0">
             <button
               type="button"
-              onclick="scrollToFullAgreement()"
-              class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-medium transition flex items-center gap-1.5"
-            >
-              <i data-lucide="book-open" class="w-4 h-4"></i>
-              <span>Read Full Agreement</span>
-            </button>
-            <button
-              type="button"
               onclick="resetToUpload()"
               class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-medium transition flex items-center gap-2"
             >
@@ -217,88 +209,93 @@
         <!-- Left Column: Category List -->
         <aside class="lg:col-span-4 space-y-2.5" id="categoryList"></aside>
 
-        <!-- Right Column: Category Detail View -->
+        <!-- Right Column: Detail View (Dynamic: AI Summary OR Full Contract Reader) -->
         <div class="lg:col-span-8 space-y-6">
-          <!-- Section 1: AI Summary -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-            <div class="flex items-center justify-between gap-4 mb-4">
+          
+          <!-- State 1: Category Detail View (AI Summary & Original Text) -->
+          <div id="categoryDetailState" class="space-y-6">
+            <!-- Section 1: AI Summary -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <i id="detailIcon" data-lucide="file-text" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600">AI Summary</span>
+                    <h3 id="detailTitle" class="text-xl font-bold text-slate-900"></h3>
+                  </div>
+                </div>
+                <span id="detailRiskBadge" class="text-xs font-semibold px-3 py-1 rounded-full"></span>
+              </div>
+
+              <p id="detailSummary" class="text-slate-700 leading-relaxed text-base mb-6"></p>
+
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Key Takeaways for Your Party</h4>
+                <ul id="detailKeyPoints" class="space-y-2 text-sm text-slate-700"></ul>
+              </div>
+            </div>
+
+            <!-- Section 2: Original Text (Verbatim Quote) -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                  <i data-lucide="quote" class="w-5 h-5 text-slate-400"></i>
+                  <h4 class="text-base font-bold text-slate-900">Original Text (Verbatim Contract Excerpt)</h4>
+                </div>
+                <span class="text-xs text-slate-400">Always verify against source document</span>
+              </div>
+              <blockquote
+                id="detailOriginalText"
+                class="bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm leading-relaxed p-5 rounded-xl border-l-4 border-indigo-500 whitespace-pre-line"
+              ></blockquote>
+            </div>
+          </div>
+
+          <!-- State 2: Full Agreement Reader Box -->
+          <div id="fullAgreementState" class="hidden bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <i id="detailIcon" data-lucide="file-text" class="w-5 h-5"></i>
+                <div class="w-10 h-10 rounded-xl bg-slate-800 text-white flex items-center justify-center">
+                  <i data-lucide="scroll-text" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600">AI Summary</span>
-                  <h3 id="detailTitle" class="text-xl font-bold text-slate-900"></h3>
+                  <h3 class="text-lg font-bold text-slate-900">Full Agreement Document</h3>
+                  <p class="text-xs text-slate-500">Complete unedited text extracted from your uploaded or pasted contract</p>
                 </div>
               </div>
-              <span id="detailRiskBadge" class="text-xs font-semibold px-3 py-1 rounded-full"></span>
-            </div>
 
-            <p id="detailSummary" class="text-slate-700 leading-relaxed text-base mb-6"></p>
-
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200/80">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Key Takeaways for Your Party</h4>
-              <ul id="detailKeyPoints" class="space-y-2 text-sm text-slate-700"></ul>
-            </div>
-          </div>
-
-          <!-- Section 2: Original Text (Verbatim Quote) -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-2.5">
-                <i data-lucide="quote" class="w-5 h-5 text-slate-400"></i>
-                <h4 class="text-base font-bold text-slate-900">Original Text (Verbatim Contract Excerpt)</h4>
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <input
+                    id="fullTextSearchInput"
+                    type="text"
+                    oninput="highlightFullText()"
+                    placeholder="Search in full contract..."
+                    class="rounded-xl border border-slate-300 pl-3 pr-8 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <span id="searchMatchCount" class="text-[11px] text-slate-400 ml-1"></span>
+                </div>
+                <button
+                  type="button"
+                  onclick="copyFullAgreement()"
+                  id="copyFullTextBtn"
+                  class="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-medium text-slate-700 transition flex items-center gap-1.5"
+                >
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  <span>Copy</span>
+                </button>
               </div>
-              <span class="text-xs text-slate-400">Always verify against source document</span>
             </div>
-            <blockquote
-              id="detailOriginalText"
-              class="bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm leading-relaxed p-5 rounded-xl border-l-4 border-indigo-500 whitespace-pre-line"
-            ></blockquote>
+
+            <div
+              id="fullAgreementContent"
+              class="bg-slate-50 border border-slate-200 rounded-xl p-6 h-[600px] overflow-y-auto font-mono text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
+            ></div>
           </div>
+
         </div>
-      </div>
-
-      <!-- Section 3: Full Agreement Reader Box -->
-      <div id="fullAgreementSection" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-              <i data-lucide="scroll-text" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-slate-900">Full Agreement Document</h3>
-              <p class="text-xs text-slate-500">Complete unedited text extracted from your uploaded or pasted contract</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <div class="relative">
-              <input
-                id="fullTextSearchInput"
-                type="text"
-                oninput="highlightFullText()"
-                placeholder="Search in full contract..."
-                class="rounded-xl border border-slate-300 pl-3 pr-8 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <span id="searchMatchCount" class="text-[11px] text-slate-400 ml-1"></span>
-            </div>
-            <button
-              type="button"
-              onclick="copyFullAgreement()"
-              id="copyFullTextBtn"
-              class="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-medium text-slate-700 transition flex items-center gap-1.5"
-            >
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              <span>Copy Text</span>
-            </button>
-          </div>
-        </div>
-
-        <div
-          id="fullAgreementContent"
-          class="bg-slate-50 border border-slate-200 rounded-xl p-6 max-h-[520px] overflow-y-auto font-mono text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap"
-        ></div>
       </div>
     </section>
   </main>
@@ -408,6 +405,7 @@
     let activeInputMode = 'pdf';
     let selectedPdfFile = null;
     let currentAnalysisData = null;
+    let activeTabId = null;
 
     function safeRenderIcons() {
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -671,6 +669,7 @@
       const listEl = document.getElementById('categoryList');
       listEl.innerHTML = '';
 
+      // AI Clause Categories
       (data.categories || []).forEach((cat, index) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -694,32 +693,74 @@
         listEl.appendChild(btn);
       });
 
-      // Populate Full Agreement Reader
+      // Add horizontal separator
+      const separator = document.createElement('div');
+      separator.className = 'my-2 border-b border-slate-200';
+      listEl.appendChild(separator);
+
+      // Add Full Agreement Tab below the clauses
+      const fullDocBtn = document.createElement('button');
+      fullDocBtn.type = 'button';
+      fullDocBtn.id = 'cat-btn-full-doc';
+      fullDocBtn.onclick = () => showFullAgreement();
+      fullDocBtn.className = 'w-full text-left p-4 rounded-2xl border transition flex items-center justify-between gap-3 bg-slate-800 border-slate-700 hover:bg-slate-700 shadow-sm';
+      fullDocBtn.innerHTML = `
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-slate-700/50 text-slate-200 flex items-center justify-center shrink-0 border border-slate-600">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+          <div class="truncate">
+            <p class="font-semibold text-sm text-white truncate">Full Agreement Document</p>
+            <p class="text-xs text-slate-400 truncate">Read the unedited contract text</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 shrink-0"></i>
+      `;
+      listEl.appendChild(fullDocBtn);
+
+      // Populate Full Agreement Content
       const fullText = data.fullContractText || '';
       document.getElementById('fullAgreementContent').textContent = fullText || 'Full agreement text is not available.';
       document.getElementById('fullTextSearchInput').value = '';
       document.getElementById('searchMatchCount').textContent = '';
 
       safeRenderIcons();
+      
+      // Default open the first category
       if (data.categories && data.categories.length > 0) {
         selectCategory(0);
       }
     }
 
-    function selectCategory(index) {
+    function clearTabStyles() {
+      // Clear all AI categories
       const categories = currentAnalysisData.categories || [];
-      const cat = categories[index];
-      if (!cat) return;
-
       categories.forEach((_, idx) => {
         const btn = document.getElementById(`cat-btn-${idx}`);
-        if (!btn) return;
-        if (idx === index) {
-          btn.className = 'w-full text-left p-4 rounded-2xl border-2 transition flex items-center justify-between gap-3 bg-indigo-50/60 border-indigo-600 shadow-xs';
-        } else {
-          btn.className = 'w-full text-left p-4 rounded-2xl border transition flex items-center justify-between gap-3 bg-white border-slate-200 hover:border-indigo-300';
-        }
+        if (btn) btn.className = 'w-full text-left p-4 rounded-2xl border transition flex items-center justify-between gap-3 bg-white border-slate-200 hover:border-indigo-300';
       });
+
+      // Clear Full Doc tab
+      const fullBtn = document.getElementById('cat-btn-full-doc');
+      if (fullBtn) fullBtn.className = 'w-full text-left p-4 rounded-2xl border transition flex items-center justify-between gap-3 bg-slate-800 border-slate-700 hover:bg-slate-700 shadow-sm';
+    }
+
+    function selectCategory(index) {
+      activeTabId = index;
+      clearTabStyles();
+
+      // Style active AI tab
+      const activeBtn = document.getElementById(`cat-btn-${index}`);
+      if (activeBtn) {
+        activeBtn.className = 'w-full text-left p-4 rounded-2xl border-2 transition flex items-center justify-between gap-3 bg-indigo-50/60 border-indigo-600 shadow-xs';
+      }
+
+      // Show Category State, Hide Full Doc State
+      document.getElementById('categoryDetailState').classList.remove('hidden');
+      document.getElementById('fullAgreementState').classList.add('hidden');
+
+      const cat = currentAnalysisData.categories[index];
+      if (!cat) return;
 
       document.getElementById('detailTitle').textContent = cat.title;
       document.getElementById('detailSummary').textContent = cat.summary;
@@ -736,11 +777,19 @@
       document.getElementById('detailOriginalText').textContent = cat.originalText || 'No verbatim quote available.';
     }
 
-    function scrollToFullAgreement() {
-      const el = document.getElementById('fullAgreementSection');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+    function showFullAgreement() {
+      activeTabId = 'full-doc';
+      clearTabStyles();
+
+      // Style active Full Doc tab
+      const activeBtn = document.getElementById('cat-btn-full-doc');
+      if (activeBtn) {
+        activeBtn.className = 'w-full text-left p-4 rounded-2xl border-2 transition flex items-center justify-between gap-3 bg-slate-900 border-slate-400 shadow-md ring-2 ring-slate-200/50';
       }
+
+      // Show Full Doc State, Hide Category State
+      document.getElementById('categoryDetailState').classList.add('hidden');
+      document.getElementById('fullAgreementState').classList.remove('hidden');
     }
 
     function escapeHtml(str) {
