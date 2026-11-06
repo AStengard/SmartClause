@@ -1,7 +1,7 @@
 {
-  "name": "avtalskollen-byok",
-  "version": "1.0.0",
-  "description": "AI-driven avtalsanalys med BYOK (OpenAI, Gemini, Claude)",
+  "name": "smartclause-byok",
+  "version": "2.0.0",
+  "description": "AI-powered contract analysis with BYOK (OpenAI, Gemini, Claude)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
