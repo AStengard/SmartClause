@@ -248,7 +248,13 @@
 
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Model</label>
-          <select id="modelSelect" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></select>
+          <select id="modelSelect" onchange="toggleCustomModelInput()" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></select>
+          <input
+            id="customModelInput"
+            type="text"
+            placeholder="e.g. gemini-3.8-flash"
+            class="hidden mt-2 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+          />
         </div>
 
         <div>
@@ -281,15 +287,19 @@
   <script>
     const MODELS = {
       gemini: [
-        { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Fast & Recommended)' },
+        { id: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash (Latest & Recommended)' },
+        { id: 'gemini-3.8-pro', label: 'Gemini 3.8 Pro (Deep Legal Reasoning)' },
+        { id: 'custom', label: 'Custom Model ID...' }
       ],
       openai: [
         { id: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast & Cost-effective)' },
-        { id: 'gpt-4o', label: 'GPT-4o (High Precision)' }
+        { id: 'gpt-4o', label: 'GPT-4o (High Precision)' },
+        { id: 'custom', label: 'Custom Model ID...' }
       ],
       claude: [
         { id: 'claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet (Recommended)' },
-        { id: 'claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku (Fast)' }
+        { id: 'claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku (Fast)' },
+        { id: 'custom', label: 'Custom Model ID...' }
       ]
     };
 
@@ -315,24 +325,51 @@
       modelSelect.innerHTML = (MODELS[provider] || [])
         .map(m => `<option value="${m.id}">${m.label}</option>`)
         .join('');
+      toggleCustomModelInput();
+    }
+
+    function toggleCustomModelInput() {
+      const modelSelect = document.getElementById('modelSelect');
+      const customInput = document.getElementById('customModelInput');
+      if (modelSelect.value === 'custom') {
+        customInput.classList.remove('hidden');
+      } else {
+        customInput.classList.add('hidden');
+      }
     }
 
     function loadSavedSettings() {
       const provider = localStorage.getItem('byok_provider') || 'gemini';
-      const model = localStorage.getItem('byok_model');
+      let model = localStorage.getItem('byok_model') || 'gemini-3.8-flash';
       const apiKey = localStorage.getItem('byok_api_key') || '';
+
+      // Automatically migrate deprecated gemini-2.5 models stored in browser localStorage
+      if (model.startsWith('gemini-2.5')) {
+        model = 'gemini-3.8-flash';
+        localStorage.setItem('byok_model', model);
+      }
 
       document.getElementById('providerSelect').value = provider;
       updateModelOptions();
-      if (model) document.getElementById('modelSelect').value = model;
-      document.getElementById('apiKeyInput').value = apiKey;
 
+      const availableIds = (MODELS[provider] || []).map(m => m.id);
+      if (availableIds.includes(model)) {
+        document.getElementById('modelSelect').value = model;
+      } else {
+        document.getElementById('modelSelect').value = 'custom';
+        document.getElementById('customModelInput').value = model;
+      }
+      toggleCustomModelInput();
+
+      document.getElementById('apiKeyInput').value = apiKey;
       updateApiStatusIndicator();
     }
 
     function saveApiSettings() {
       const provider = document.getElementById('providerSelect').value;
-      const model = document.getElementById('modelSelect').value;
+      const selectedOption = document.getElementById('modelSelect').value;
+      const customModel = document.getElementById('customModelInput').value.trim();
+      const model = selectedOption === 'custom' && customModel ? customModel : selectedOption;
       const apiKey = document.getElementById('apiKeyInput').value.trim();
 
       localStorage.setItem('byok_provider', provider);
@@ -441,7 +478,12 @@
       hideError();
       const apiKey = localStorage.getItem('byok_api_key');
       const provider = localStorage.getItem('byok_provider') || 'gemini';
-      const model = localStorage.getItem('byok_model') || MODELS[provider][0].id;
+      let model = localStorage.getItem('byok_model') || MODELS[provider][0].id;
+
+      if (model.startsWith('gemini-2.5')) {
+        model = 'gemini-3.8-flash';
+        localStorage.setItem('byok_model', model);
+      }
 
       if (!apiKey) {
         toggleApiModal(true);

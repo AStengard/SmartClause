@@ -105,7 +105,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
     // --- GOOGLE GEMINI ---
     else if (provider === 'gemini') {
       const selectedModel = model || 'gemini-3.8-flash';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey.trim()}`;
+      const cleanModelName = selectedModel.replace(/^models\//, '');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModelName}:generateContent?key=${apiKey.trim()}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
