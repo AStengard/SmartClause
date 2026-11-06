@@ -22,7 +22,7 @@
         </div>
         <div>
           <span class="font-bold text-lg tracking-tight text-slate-900">SmartClause</span>
-          <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">AI Prototype</span>
+          <span class="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">By Alfred Stengard</span>
         </div>
       </div>
 
@@ -67,26 +67,6 @@
       </div>
 
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-
-        <!-- Dynamic POV / Party Auto-Detection Input -->
-        <div class="mb-6 bg-indigo-50/60 border border-indigo-100 rounded-xl p-4">
-          <div class="flex items-center justify-between mb-1.5">
-            <label for="userPartyInput" class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-              <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
-              <span>Your Organization / Party Name (Dynamic POV Detection)</span>
-            </label>
-            <span class="text-[11px] font-medium text-indigo-600 bg-white px-2 py-0.5 rounded-md border border-indigo-200">Single-Pass AI Auto-Match</span>
-          </div>
-          <p class="text-xs text-slate-600 mb-3">
-            Enter your company or personal name (e.g., <span class="font-medium text-slate-800">"Apex Global Corp"</span> or <span class="font-medium text-slate-800">"NextGen Dev Studio"</span>). The AI will automatically detect which party role you represent and evaluate all risks from your point of view.
-          </p>
-          <input
-            id="userPartyInput"
-            type="text"
-            placeholder="e.g., Apex Global Corp (leave blank for a neutral, balanced review)"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
 
         <!-- Input Mode Tabs -->
         <div class="flex rounded-xl bg-slate-100 p-1 mb-6">
@@ -134,8 +114,28 @@
           ></textarea>
         </div>
 
+        <!-- Dynamic POV / Party Auto-Detection Input (Moved below input areas) -->
+        <div class="my-6 bg-indigo-50/60 border border-indigo-100 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="userPartyInput" class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+              <i data-lucide="building-2" class="w-4 h-4 text-indigo-600"></i>
+              <span>Your Organization / Party Name (Dynamic POV Detection)</span>
+            </label>
+            <span class="text-[11px] font-medium text-indigo-600 bg-white px-2 py-0.5 rounded-md border border-indigo-200">Single-Pass AI Auto-Match</span>
+          </div>
+          <p class="text-xs text-slate-600 mb-3">
+            Enter your company or personal name (e.g., <span class="font-medium text-slate-800">"Apex Global Corp"</span> or <span class="font-medium text-slate-800">"NextGen Dev Studio"</span>). The AI will automatically detect which party role you represent and evaluate all risks from your point of view.
+          </p>
+          <input
+            id="userPartyInput"
+            type="text"
+            placeholder="e.g., Apex Global Corp (leave blank for a neutral, balanced review)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+
         <!-- Action Buttons -->
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
           <div class="text-xs text-slate-500 flex items-center gap-2">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
             <span>Your API key is stored strictly locally in your browser.</span>

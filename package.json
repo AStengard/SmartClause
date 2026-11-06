@@ -1,6 +1,6 @@
 {
   "name": "smartclause-byok",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "AI-powered contract analysis with BYOK (OpenAI, Gemini, Claude) and Dynamic POV Detection",
   "main": "server.js",
   "scripts": {
